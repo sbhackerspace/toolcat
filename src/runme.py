@@ -5,7 +5,9 @@ import os
 # requires imagemagick (brew install imagemagick)
 
 for filepath in sorted(glob.iglob('datasets/blue-toolchest/*.jpg')):
-    subprocess.run([
+	fileName = os.path.splitext(os.path.basename(filepath))[0]
+	print("Silhouetting %s" % (fileName))
+	subprocess.run([
             'convert',
             filepath,
             # downsample, make grayscale, select all channels (used for open/close I think)
@@ -22,10 +24,18 @@ for filepath in sorted(glob.iglob('datasets/blue-toolchest/*.jpg')):
             '-connected-components','4',
             # make black first two found objects (should be outside, then lightbox, everything else disappear)
             '-threshold','1',
-            os.path.join('out', filepath)])
+            #invert image for SVG processing
+            '-negate',
+            os.path.join('out/processed', fileName + '.bmp')])
+	print("Vectorizing %s" % (fileName))
+	subprocess.run([
+    	'potrace',
+    	'-s',
+    	'out/processed/' + fileName + '.bmp',
+    	'-o',
+    	'out/svg/' + fileName + '.svg'
+    	])
     
-    # todo: use potrace to make SVG 
-    # http://potrace.sourceforge.net
 
 
 
